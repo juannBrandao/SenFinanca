@@ -4,16 +4,48 @@ import FormTransaction from "../../components/formTransaction/index";
 import Modal from "../../components/modal/index";
 import "./index.css";
 function Home() {
-  const { currentTransactions } = useContext(UserContext);
-  const { newTransaction } = useContext(UserContext);
-  const { removeTransaction } = useContext(UserContext);
+  const {
+    loadTransactions,
+    transactions,
+    newTransaction,
+    removeTransaction,
+    updateTransaction,
+  } = useContext(UserContext);
   const [currentRecipes, setCurrentRecipes] = useState(0);
   const [currentExpenses, setCurrentExpenses] = useState(0);
   const [currentBalance, setCurrentBalance] = useState(0);
+  const [currentFilterCategory, setCurrentFilterCategory] = useState(0);
+  const [currentFilterType, setCurrentFilterType] = useState(0);
+  const [transactionsData, setTransactionsData] = useState([]);
   const [showmodal, setShowModal] = useState(false);
   const [selectedTransaction, setSelectedTransaction] = useState(null);
+  const categories = [
+    { id: 1, value: "ALIMENTAÇÂO" },
+    { id: 2, value: "ANIMAL DE ESTIMAÇÃO" },
+    { id: 3, value: "CASA" },
+    { id: 4, value: "EDUCAÇÃO" },
+    { id: 5, value: "GASTOS ESPORÁDICOS" },
+    { id: 6, value: "GASTOS PESSOAIS" },
+    { id: 7, value: "IMPOSTOS" },
+    { id: 8, value: "LAZER" },
+    { id: 9, value: "OUTROS GASTOS" },
+    { id: 10, value: "RECEITA" },
+    { id: 11, value: "SAÚDE" },
+    { id: 12, value: "SEGUROS" },
+    { id: 13, value: "SEVIÇOS FINANCEIROS" },
+    { id: 14, value: "TRANSPORTE" },
+  ];
   useEffect(() => {
-    const transactionsValue = currentTransactions.map(
+    const transactions = localStorage.getItem("transactions")
+      ? JSON.parse(localStorage.getItem("transactions"))
+      : [];
+    localStorage.setItem("categories", JSON.stringify(categories));
+    loadTransactions(transactions);
+  }, []);
+  useEffect(() => {
+    localStorage.setItem("transactions", JSON.stringify(transactions));
+    setTransactionsData(transactions);
+    const transactionsValue = transactions?.map(
       (transaction) => transaction.value
     );
     const currentValue = transactionsValue
@@ -30,15 +62,42 @@ function Home() {
       .reduce((acumulator, value) => acumulator + value, 0)
       .toFixed(2);
     setCurrentExpenses(Math.abs(expenses));
-  }, [currentTransactions]);
+  }, [transactions]);
   const onSelectTransaction = (transaction) => {
     setSelectedTransaction(transaction);
     setShowModal(true);
   };
-  const handleNewTransaction = ()=>{
+  const handleNewTransaction = () => {
     setSelectedTransaction(null);
     setShowModal(true);
-  }
+  };
+  useEffect(() => {
+    handleChangeFilter(Number(currentFilterCategory), Number(currentFilterType));
+  }, [currentFilterCategory, currentFilterType]);
+  const handleChangeFilter = (filterCategory, filterType) => {
+    let transactionsFilter = [];
+    if (filterType === 0 && filterCategory === 0) {
+      transactionsFilter = transactions;
+    }
+    if (filterType === 0 && filterCategory !== 0) {
+      transactionsFilter = transactions.filter(
+        (transaction) => Number(transaction.category.id) === filterCategory
+      );
+    }
+    if (filterType !== 0 && filterCategory !== 0) {
+      transactionsFilter = transactions.filter(
+        (transaction) =>
+          Number(transaction.type) === filterType &&
+          Number(transaction.category.id) === filterCategory
+      );
+    }
+    if (filterType !== 0 && filterCategory === 0) {
+      transactionsFilter = transactions.filter(
+        (transaction) => Number(transaction.type) === filterType
+      );
+    }
+    setTransactionsData(transactionsFilter);
+  };
   return (
     <div className="container">
       <h4>Saldo atual</h4>
@@ -64,8 +123,31 @@ function Home() {
       </div>
 
       <h3>Transações</h3>
+      <select
+        name="filter"
+        id="filter"
+        data-testid="filter_type"
+        onChange={(e) => setCurrentFilterType(e.target.value)}
+      >
+        <option value={0}>Todos</option>
+        <option value={1}>Entrada</option>
+        <option value={2}>Saida</option>
+      </select>
+      <select
+        name="filter"
+        id="filter"
+        data-testid="filter_Category"
+        onChange={(e) => setCurrentFilterCategory(e.target.value)}
+      >
+        <option value={0}>todos</option>
+        {categories.map((category) => (
+          <option key={category.id} value={category.id}>
+            {category.value}
+          </option>
+        ))}
+      </select>
       <ul id="transactions" className="transactions">
-        {currentTransactions.map((transaction) => {
+        {transactionsData?.map((transaction) => {
           return (
             <li
               key={transaction.id}
@@ -73,19 +155,19 @@ function Home() {
               onClick={() => onSelectTransaction(transaction)}
             >
               <div>
-                <span>{transaction.title}</span>
-                <span className="date">{transaction.date}</span>
+                <div>
+                  <span>{transaction.title}</span>
+                  <span className="date">{transaction.date}</span>
+                </div>
+                <div>
+                  <span>{Number(transaction.type) === 1 ? "Entrada" : "Saida"}</span>
+                  <span>{transaction.category.value}</span>
+                </div>
               </div>
               <span className="value">
                 {transaction.value < 0 ? "-" : "+"} R${" "}
                 {Math.abs(transaction.value)}
               </span>
-              {/* <button
-                className="delete-btn"
-                onClick={() => removeTransaction(transaction.id)}
-              >
-                x
-              </button> */}
             </li>
           );
         })}
@@ -98,9 +180,12 @@ function Home() {
           transaction={selectedTransaction}
           newTransaction={newTransaction}
           removeTransaction={removeTransaction}
+          setShowModal={setShowModal}
+          updateTransaction={updateTransaction}
+          categories={categories}
         />
       </Modal>
-      <button onClick={() => handleNewTransaction()}>Nova Transação</button>
+      <button data-testid="ButtonNewTransaction" onClick={() => handleNewTransaction()}>Nova Transação</button>
     </div>
   );
 }

@@ -1,49 +1,46 @@
-import React, { useEffect, createContext, useState } from "react";
-
-// const transactions = [
-//   {
-//     id: 1,
-//     type: "despesa",
-//     title: "fone de ouvido",
-//     date: "01/01/2000",
-//     value: -80,
-//     category: "compras",
-//   },
-// ];
-
-export const UserContext = createContext({});
+import React, { createContext,  useReducer } from "react";
+import TransactionReducer from "./transactionReducer";
+const initialStateTransaction = { transactions: [] };
+export const UserContext = createContext({ ...initialStateTransaction });
 
 export function UserContextProvider({ children }) {
-  const localStorageTransactions = JSON.parse(
-    localStorage.getItem("transactions")
+  const [stateTransaction, dispatchTransaction] = useReducer(
+    TransactionReducer,
+    initialStateTransaction
   );
-  const transactions =
-    localStorage.getItem("transactions") !== null
-      ? localStorageTransactions
-      : [];
-
-  const [currentTransactions, setCurrentTransactions] = useState(transactions);
-
   function newTransaction(transaction) {
-    setCurrentTransactions([...currentTransactions, transaction]);
+    dispatchTransaction({
+      type: "ADD_TRANSACTION",
+      payload: transaction,
+    });
   }
 
   function removeTransaction(transactionID) {
-    const transactions = currentTransactions.filter(
-      (transaction) => transaction.id !== transactionID
-    );
-    setCurrentTransactions(transactions);
+    dispatchTransaction({
+      type: "REMOVE_TRANSACTION",
+      payload: transactionID,
+    });
   }
-  useEffect(() => {
-    localStorage.setItem("transactions", JSON.stringify(currentTransactions));
-  }, [currentTransactions]);
-
+  function updateTransaction(transaction) {
+    dispatchTransaction({
+      type: "UPDATE_TRANSACTION",
+      payload: transaction,
+    });
+  }
+  function loadTransactions(transaction) {
+    dispatchTransaction({
+      type: "LOAD_TRANSACTIONS",
+      payload: transaction,
+    });
+  }
   return (
     <UserContext.Provider
       value={{
         newTransaction,
-        currentTransactions,
         removeTransaction,
+        updateTransaction,
+        loadTransactions,
+        ...stateTransaction,
       }}
     >
       {children}
