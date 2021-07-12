@@ -72,7 +72,10 @@ function Home() {
     setShowModal(true);
   };
   useEffect(() => {
-    handleChangeFilter(Number(currentFilterCategory), Number(currentFilterType));
+    handleChangeFilter(
+      Number(currentFilterCategory),
+      Number(currentFilterType)
+    );
   }, [currentFilterCategory, currentFilterType]);
   const handleChangeFilter = (filterCategory, filterType) => {
     let transactionsFilter = [];
@@ -123,29 +126,33 @@ function Home() {
       </div>
 
       <h3>Transações</h3>
-      <select
-        name="filter"
-        id="filter"
-        data-testid="filter_type"
-        onChange={(e) => setCurrentFilterType(e.target.value)}
-      >
-        <option value={0}>Todos</option>
-        <option value={1}>Entrada</option>
-        <option value={2}>Saida</option>
-      </select>
-      <select
-        name="filter"
-        id="filter"
-        data-testid="filter_Category"
-        onChange={(e) => setCurrentFilterCategory(e.target.value)}
-      >
-        <option value={0}>todos</option>
-        {categories.map((category) => (
-          <option key={category.id} value={category.id}>
-            {category.value}
-          </option>
-        ))}
-      </select>
+      <div className="filters">
+        <span>Filtrar Por :</span>
+        <select
+          name="filter"
+          id="filter"
+          data-testid="filter_type"
+          onChange={(e) => setCurrentFilterType(e.target.value)}
+        >
+          <option value={0}>Todas</option>
+          <option value={1}>Entrada</option>
+          <option value={2}>Saida</option>
+        </select>
+        <select
+          name="filter"
+          id="filter"
+          data-testid="filter_Category"
+          onChange={(e) => setCurrentFilterCategory(e.target.value)}
+        >
+          <option value={0}>Todas</option>
+          {categories.map((category) => (
+            <option key={category.id} value={category.id}>
+              {category.value}
+            </option>
+          ))}
+        </select>
+      </div>
+
       <ul id="transactions" className="transactions">
         {transactionsData?.map((transaction) => {
           return (
@@ -160,7 +167,9 @@ function Home() {
                   <span className="date">{transaction.date}</span>
                 </div>
                 <div>
-                  <span>{Number(transaction.type) === 1 ? "Entrada" : "Saida"}</span>
+                  <span>
+                    {Number(transaction.type) === 1 ? "Entrada" : "Saida"}
+                  </span>
                   <span>{transaction.category.value}</span>
                 </div>
               </div>
@@ -173,8 +182,6 @@ function Home() {
         })}
       </ul>
 
-      <h3>Adicionar transação</h3>
-
       <Modal onClose={() => setShowModal(false)} show={showmodal}>
         <FormTransaction
           transaction={selectedTransaction}
@@ -185,7 +192,14 @@ function Home() {
           categories={categories}
         />
       </Modal>
-      <button data-testid="ButtonNewTransaction" onClick={() => handleNewTransaction()}>Nova Transação</button>
+      <div className="new_transaction">
+        <button
+          data-testid="ButtonNewTransaction"
+          onClick={() => handleNewTransaction()}
+        >
+          Nova Transação
+        </button>
+      </div>
     </div>
   );
 }

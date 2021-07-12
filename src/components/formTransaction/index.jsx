@@ -3,7 +3,7 @@ import "./index.css";
 const FormTransaction = (props) => {
   const [typeTransaction, setTypeTransaction] = useState(0);
   const [titleTransaction, setTitleTransaction] = useState("");
-  const [transactionValue, setTransactionValue] = useState(0);
+  const [transactionValue, setTransactionValue] = useState();
   const [categoryTransaction, setCategoryTransaction] = useState({});
   const generateID = () => Math.round(Math.random() * 1000);
   const FormatData = () => {
@@ -20,7 +20,10 @@ const FormTransaction = (props) => {
       type: typeTransaction,
       title: titleTransaction,
       date: FormatData(),
-      value: Number(transactionValue),
+      value:
+        typeTransaction == 1
+          ? +Number(transactionValue)
+          : -Number(transactionValue),
       category: categoryTransaction,
     };
     if (
@@ -34,13 +37,12 @@ const FormTransaction = (props) => {
       props.newTransaction(transaction);
       props.setShowModal(false);
       resetForm();
-
     }
   };
   const resetForm = () => {
     setTypeTransaction(0);
     setTitleTransaction("");
-    setTransactionValue(0);
+    setTransactionValue('');
     setCategoryTransaction({});
   };
   useEffect(() => {
@@ -67,6 +69,7 @@ const FormTransaction = (props) => {
       category: categoryTransaction,
     };
     props.updateTransaction(transaction);
+    props.setShowModal(false);
   };
   return (
     <form id="form" onSubmit={handleNewTransaction}>
@@ -107,11 +110,9 @@ const FormTransaction = (props) => {
       </div>
 
       <div className="form-control">
-        <label htmlFor="amount">
-          Valor &nbsp;
-        </label>
+        <label htmlFor="amount">Valor &nbsp;</label>
         <input
-          type="number"
+          type="text"
           id="amount"
           data-testid="transaction_value"
           placeholder="Valor da transação"
@@ -121,7 +122,6 @@ const FormTransaction = (props) => {
       </div>
       <div className="form-control">
         <label htmlFor="category">Categoria</label>
-
         <select
           name="category"
           id="category"
@@ -132,42 +132,40 @@ const FormTransaction = (props) => {
               value: e.target.selectedOptions[0].value,
             })
           }
+          value={categoryTransaction.value}
         >
           <option key={0} value=""></option>
           {props.categories.map((category) => (
-            <option
-              key={category.id}
-              id={category.id}
-              value={category.value}
-              onSelect={() =>
-                console.log({ id: category.id, value: category.value })
-              }
-            >
+            <option key={category.id} id={category.id} value={category.value}>
               {category.value}
             </option>
           ))}
         </select>
-      </div>
-      <button className="btn" type="submit" data-testid="transaction_add">
-        Adicionar
-      </button>
-
-      <button
-        type="button"
-        className="delete-btn"
-        data-testid="transaction_delete"
-        onClick={() => handleRemoveTransaction()}
-      >
-        Excluir
-      </button>
-      <button
-        type="button"
-        className="delete-btn"
-        data-testid="transaction_update"
-        onClick={() => handleUpdateTransaction()}
-      >
-        Alterar
-      </button>
+      </div >
+      {props.transaction === null ? (
+        <button className="btn" type="submit" data-testid="transaction_add">
+          Adicionar
+        </button>
+      ) : (
+        <div className="group-actionButtons">
+          <button
+            type="button"
+            className="delete-btn"
+            data-testid="transaction_delete"
+            onClick={() => handleRemoveTransaction()}
+          >
+            Excluir
+          </button>
+          <button
+            type="button"
+            className="delete-btn"
+            data-testid="transaction_update"
+            onClick={() => handleUpdateTransaction()}
+          >
+            Alterar
+          </button>
+        </div>
+      )}
     </form>
   );
 };

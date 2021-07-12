@@ -113,7 +113,7 @@ describe("Home Componnent", () => {
     render(wrapper);
     fireEvent.click(screen.getByTestId('filter_type'))
     fireEvent.click(screen.getByTestId('filter_Category'))
-    fireEvent.click(screen.getAllByText('Todos')[0])
+    fireEvent.click(screen.getAllByText('Todas')[0])
     fireEvent.click(screen.getAllByText('RECEITA')[0])
     expect(screen.getAllByText('salário')[0]).toBeInTheDocument();
   });

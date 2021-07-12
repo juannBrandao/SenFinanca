@@ -24,7 +24,6 @@ export default function (state, action) {
       }
   }
   if(action.type === "LOAD_TRANSACTIONS"){
-    console.log(action.payload)
     return{
       ...state,
       transactions: action.payload
